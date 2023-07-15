@@ -1,2 +1,3 @@
 # active
-For analysing my running and cycling data.
+
+For analysing GPS watch and cycling computer data.
