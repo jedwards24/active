@@ -6,29 +6,60 @@ library(slider)
 source("FUNC.R")
 theme_set(theme_minimal())
 
-fs::dir_ls()
-froot <- "C:/Users/James/Dropbox/Mine/Personal/BU/garmin old files/bike_20-05-22"
-
-# Not sure what this is:
-garmin_file <- system.file("extdata/Garmin.fit", package = "fitFileR")
-garmin <- readFitFile(garmin_file)
-names(garmin)
-
-?readFitFile
 # Read one of my FIT files
-file <- file.path(froot, "2020-05-20-11-47-35.fit")
 file <- "data/2020-05-20-11-47-35.fit"
 file2 <- "data/2022-05-29-073545-ELEMNT BOLT 3A07-256-0.fit"
 
-dt <- readFitFile(file)
-eb <- readFitFile(file2)
+system.time(dt <- readFitFile(file))
+system.time(eb <- readFitFile(file2))
 
+# explore object--------
 eb
-names(dt)
+is(dt)
+slotNames(dt)
+dt@header
+dt@messages
+dt@developer_msg_defs
 str(dt)
-map(dt, class)
-map(dt, dim)
+listMessageTypes(dt)
+laps(dt)
+events(dt)
+ss <- getMessagesByType(dt, "session")
+glimpse(ss)
+getMessagesByType(dt, "file_id")
+getMessagesByType(dt, "device_info")
+getMessagesByType(dt, "activity")
 
+eb_types <- listMessageTypes(eb)
+eb_list <- map(eb_types[-c(9, 13)], ~getMessagesByType(eb, .))
+names(eb_list) <- eb_types[-c(9, 13)]
+map(eb_list, ~dim(bind_rows(.))) %>%
+  enframe() %>%
+  hoist(value, nrow = 1, ncol = 2)
+
+nm_sess <- names(eb_list$session)
+nm_lap <- names(eb_list$lap)
+compare_sets(nm_lap, nm_sess)
+setdiff(nm_sess, nm_lap)
+
+walk(eb_list[1:4], print)
+rec <- records_to_tibble(eb)
+events(eb)
+getMessagesByType(eb, "device_info") #error
+getMessagesByType(eb, "workout")
+getMessagesByType(eb, "activity")
+getMessagesByType(eb, "segment_lap")
+getMessagesByType(eb, "mfg_range_min") #error
+
+laps(eb)
+
+x <- eb@messages[[4]]
+slotNames(x)
+x@header
+x@definition
+x@fields
+
+# extract records --------
 rec_list <- records(dt)
 map_int(rec_list, nrow)
 map(rec_list, ~slice_head(.)$timestamp)
@@ -36,6 +67,7 @@ rec <- rec_list %>%
   bind_rows() %>%
   arrange(timestamp)
 rec <- records_to_tibble(dt)
+#rec <- records_to_tibble(eb)
 
 # Plots ------
 ggplot(rec, aes(timestamp, power)) +
@@ -72,6 +104,16 @@ sf1 <- rec %>%
 ggplot(sf1) +
   geom_sf()
 
+library(leaflet)
+
+m <- rec %>%
+  select(position_long, position_lat) %>%
+  as.matrix() %>%
+  leaflet(  ) %>%
+  addTiles() %>%
+  addPolylines( )
+
+m
 # Power Curve-----------
 rec %>%
   mutate(ma = slide_dbl(power, mean, .before = 30)) %>%
@@ -93,6 +135,7 @@ ggplot(pwr_tbl, aes(times, pwr)) +
   geom_line() +
   scale_x_continuous(labels = seconds_to_text,
                      breaks = c(30, 300, 600, 1200))
+#                     trans = "log")
 
 # Write notes on this but I can just use fixed breaks and labels because the range will be fixed.
 ?seconds_to_period

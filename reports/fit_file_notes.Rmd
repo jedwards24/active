@@ -1,0 +1,89 @@
+---
+title: "FIT File Reading Notes"
+output: html_document
+date: "2023-07-07"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE, error=FALSE, cache = TRUE)
+library(FITfileR)
+library(tidyverse)
+library(edwards)
+library(kableExtra)
+#library(slider)
+source("../FUNC.R")
+#theme_set(theme_minimal())
+```
+
+# Wahoo Elemnt Bolt
+
+This is a file from 2022-06-05.
+
+```{r, fit}
+fit <- readRDS("../data_processed/eb_2022-06-05-084512.RDS")
+fit2 <- readRDS("../data_processed/eb_2020-08-14-184117.RDS")
+```
+
+```{r, types, echo = TRUE}
+listMessageTypes(fit)
+count_message_types(fit) %>% my_kable()
+```
+
+Extracting "mfg_range_min" messages gives errors:
+
+```{r, errs, echo = TRUE, error = TRUE}
+getMessagesByType(fit, "device_info")
+getMessagesByType(fit, "mfg_range_min")
+```
+
+In another file the "device_info" did work and produced a tibble with 16 rows. Here are 3 representative rows (I have shortened the names (device -> dev)):
+
+```{r, dev_info}
+  x <- getMessagesByType(fit2, "device_info") %>% 
+    bind_rows() %>% 
+    rename_with(~str_replace(., "device", "dev"))
+  my_kable(slice(x, c(1,2,16)), caption = "device_info")
+```
+ 
+The remaining messages give the following sized tibbles (after `bind_rows()`):
+
+```{r dims}
+types <- listMessageTypes(fit)
+use <- types %in% c("file_id", "hr_zone", "power_zone", "sport", "session", "lap", "record", "event", "workout", "activity")
+#ind_use <- c(1:8, 10:12)
+fit_list <- map(types[use], ~bind_rows(getMessagesByType(fit, .)))
+names(fit_list) <- types[use]
+fit_list$record <- arrange(fit_list$record, timestamp)
+map(fit_list, ~dim(.)) %>%
+  enframe() %>%
+  hoist(value, nrow = 1, ncol = 2) %>% 
+  my_kable()
+```
+
+There may be extra message types in some files, for example, "segment_lap" if strava live is enabled.
+
+```{r segment lap}
+  my_kable(getMessagesByType(fit2, "segment_lap"), caption = "segment_lap")
+```
+
+Here are the contents of the smaller of those tibbles (first 6 rows in the case of records):
+
+```{r, results = "asis"}
+use <- c("file_id", "hr_zone", "power_zone", "sport", "record", "event", "workout", "activity")
+walk2(fit_list[use], names(fit_list[use]), ~print(my_kable(head(.x), caption = .y)))
+```
+
+The "session" data has all of the columns in the "lap" data plus these others:
+
+```{r, sess_lap_cols}
+setdiff(names(fit_list$session), names(fit_list$lap))
+```
+
+In this example there is only one lap so the single row in "lap" gives the same data as "session". Here is a `glimpse()` of the "session" table:
+
+```{r}
+glimpse(fit_list$session)
+```
+
+If there is no power meter then those columns will be missing. If there is a HRM then there will be extra columns relating to that.
+

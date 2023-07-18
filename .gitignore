@@ -3,4 +3,6 @@
 .RData
 .Ruserdata
 data/
+data_processed/
 *.html
+reports/*cache*
