@@ -19,3 +19,12 @@ count_message_types <- function(fit_file) {
     left_join(FITfileR:::fit_data_types$mesg_num) %>%
     count(value)
 }
+
+map_route <- function(record) {
+  record %>%
+    select(position_long, position_lat) %>%
+    as.matrix() %>%
+    leaflet::leaflet(  ) %>%
+    leaflet::addTiles() %>%
+    leaflet::addPolylines( )
+}
