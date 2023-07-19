@@ -106,47 +106,9 @@ ggplot(sf1) +
 
 library(leaflet)
 
-m <- rec %>%
+rec %>%
   select(position_long, position_lat) %>%
   as.matrix() %>%
   leaflet(  ) %>%
   addTiles() %>%
   addPolylines( )
-
-m
-# Power Curve-----------
-rec %>%
-  mutate(ma = slide_dbl(power, mean, .before = 30)) %>%
-  mutate(entry = row_number()) %>%
-  ggplot(aes(entry, ma)) +
-  geom_line()
-
-slide_dbl(rec$power, mean, .before = 10, .complete = T) %>% head(15)
-peak_power <- function(dat, seconds) {
-  max(slide_dbl(dat$power, mean, .before = seconds), na.rm = TRUE)
-}
-peak_power(rec, 600)
-times <- c(1:4, seq(5, 30, by = 5), 40, 50, 60, seq(120, 600, by = 60), seq(900, 1800, by = 300))
-pwr <- map_dbl(times, ~peak_power(rec, .))
-seconds_to_period(times)
-pwr_tbl <- tibble(times, pwr)
-prinf(pwr_tbl)
-ggplot(pwr_tbl, aes(times, pwr)) +
-  geom_line() +
-  scale_x_continuous(labels = seconds_to_text,
-                     breaks = c(30, 300, 600, 1200))
-#                     trans = "log")
-
-# Write notes on this but I can just use fixed breaks and labels because the range will be fixed.
-?seconds_to_period
-
-seconds_to_text <- function(x) {
-  case_when(
-    x < 60 ~ paste0(x, "S"),
-    x %% 60 == 0 ~ paste0(x/60, "M"),
-    TRUE ~ as.character(seconds_to_period(x))
-  )
-}
-if (x < 60) return()
-if (x %% 60 == 0) return(paste0(x, "M"))
-seconds_to_text(times)
