@@ -17,7 +17,8 @@ source("../FUNC.R")
 
 # Wahoo Elemnt Bolt
 
-This is a file from 2022-06-05.
+
+The following is from the file "2020-07-06-152220-ELEMNT BOLT 3A07-1-0.fit". This starts with  "YYYY-MM-DD-HHMMSS", although the time does not always match the start time of the ride. The rest is the same for all files except for the "1" towards the end which is file counter. There are some numbers missing though - could be rides I did not save.
 
 ```{r, fit}
 fit <- readRDS("../data_processed/eb_2022-06-05-084512.RDS")

@@ -112,3 +112,30 @@ rec %>%
   leaflet(  ) %>%
   addTiles() %>%
   addPolylines( )
+
+# record list explore ------
+rec_list <- readRDS("data_processed/records_2023-07-11.RDS")
+rec <- rec_list[[1]]
+count(rec, left_right_balance)
+count(rec, battery_soc)
+batt <- map(rec_list, ~pull(., battery_soc))
+unlist(batt) %>% vcount()
+head(batt)
+dtb <- tibble(name = str_remove(names(batt), "data_processed/eb_"),
+              data = batt) %>%
+  mutate(id = row_number()) %>%
+  mutate(min = map_int(data, min, na.rm = T))
+dtb %>%
+  arrange(min)
+
+rec_list[[266]] %>% map_route()
+
+# Coros -----------
+fs::dir_ls("data", regexp = "^\\d{6}")
+fs::dir_ls("data") %>% tail()
+
+cr <- readFitFile("data/453647042718236674.fit")
+listMessageTypes(cr)
+rec <- records_to_tibble(cr)
+ss <- getMessagesByType(cr, "session")
+glimpse(rec)
