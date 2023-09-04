@@ -8,16 +8,31 @@ source("FUNC.R")
 
 # Read all fit files, as save as fit_file objects
 ff <- fs::dir_ls("data", regexp = "ELEMNT")
-walk(ff, process_eb)
+# Table of filenames to check what has already been processed
+ff_proc <- fs::dir_ls("data_processed/fit_objs", regexp = "eb_")
+ftb <- tibble(data_name = ff,
+              date = str_extract(ff, "\\d{4}-\\d{2}-\\d{2}-\\d{6}"),
+              proc_name = path("data_processed", "fit_objs", eb_save_name(date)),
+              todo = !proc_name %in% ff_proc)
+count(ftb, todo)
+
+ff2 <- ftb %>%
+  filter(todo) %>%
+  pull(data_name)
+walk(ff2, process_eb, .progress = TRUE)
 
 # Extract main messages from files saved in previous step
 # File 270 errors when extracting session data. Excluded for now.
-exclude <- 270
-ff <- fs::dir_ls("data_processed/fit_objs")[-exclude]
-system.time(fe_list <- map(ff, ~fit_extract(readRDS(.)), .progress = T))
+#exclude <- 270
+#ff <- fs::dir_ls("data_processed/fit_objs")[-exclude]
+ff3 <- ftb %>%
+  filter(todo) %>%
+  pull(proc_name)
 
-# Save extracts individually
-map2(fe_list, ff, save_extracts)
+system.time(walk(ff3, fit_extract_save, .progress = TRUE))
+
+# Load all extracts to a list
+fe_list <- map(fs::dir_ls("data_processed/extracts", regexp = "extr_eb_"), readRDS)
 
 # Save a collection for each message type
 rec_list <- map(fe_list, ~pluck(., "record"))

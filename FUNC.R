@@ -48,15 +48,21 @@ process_eb <- function(file, dest = "data_processed/fit_objs/") {
   date <- str_extract(fs::path_file(file), "^\\d{4}-\\d{2}-\\d{2}-\\d{6}")
   stopifnot(length(date) > 0)
   dt <- readFitFile(file)
-  saveRDS(dt, fs::path(dest, paste0("eb_", date, ".RDS")))
+  saveRDS(dt, fs::path(dest, eb_save_name(date)))
 }
 
-# Save object `x` with name based on the the file part of `load_path`.
-# used in files_PROCESS.R
-save_extracts <- function(x, load_path, save_folder = "data_processed/extracts") {
-  file_name <- fs::path_file(load_path)
+# Helper for process_eb() but also used in files_PROCESS.R for consistent naming.
+# `date` is "yyyy-mm-dd-hhmmss"
+eb_save_name <- function(date) {
+  paste0("eb_", date, ".RDS")
+}
+
+# Read extract from fit file and save results with file name derived from the original
+fit_extract_save <- function(file, dest = "data_processed/extracts") {
+  file_name <- fs::path_file(file)
   save_name <- paste0("extr_", file_name)
-  saveRDS(x, fs::path(save_folder, save_name))
+  fit <- fit_extract(readRDS(file))
+  saveRDS(fit, fs::path(dest, save_name))
 }
 
 # Power-Duration Curves---------------
@@ -68,7 +74,7 @@ pwr_time_range <- function() {
     40, 50, 60,
     seq(120, 600, by = 60),
     seq(900, 1800, by = 300),
-    seq(2100, 7200, by = 600))
+    seq(2400, 7200, by = 600))
 }
 
 # Gives peak mean power for a given number of seconds for a single activity record.
@@ -81,7 +87,7 @@ pwr_peak <- function(record, seconds) {
 # Gives peak mean power for a vector of durations for a single activity record.
 # Returns a numeric vector.
 pwr_bests <- function(record, times = pwr_time_range()) {
-  map_dbl(times, ~peak_power(record, .))
+  map_dbl(times, ~pwr_peak(record, .))
 }
 
 # Combine a list of power best vectors (peak power for each duration in `times`) into
