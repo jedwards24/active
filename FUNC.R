@@ -13,12 +13,14 @@ map_route <- function(record) {
 # Input is a `fit_file` object.
 # Extracts five types of messages, each into their own tibble and
 # outputs all as a named list.
+# The use of `possibly()` is to handle an error in one file where the session data is missing.
 fit_extract <- function(x) {
+  possible_message <- possibly(getMessagesByType, tibble(NA))
   list(record = records_to_tibble(x),
        lap = laps_to_tibble(x),
-       session = getMessagesByType(x, "session"),
-       event = getMessagesByType(x, "event"),
-       activity = getMessagesByType(x, "activity"))
+       session = possible_message(x, "session"),
+       event = possible_message(x, "event"),
+       activity = possible_message(x, "activity"))
 }
 
 # Extract records from a fit file, combine and sort by timestamp.

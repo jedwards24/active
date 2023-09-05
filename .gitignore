@@ -4,5 +4,6 @@
 .Ruserdata
 data/
 data_processed/
+data_redundant/
 *.html
 reports/*cache*

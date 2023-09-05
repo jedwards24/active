@@ -17,12 +17,23 @@ source("../FUNC.R")
 
 # Wahoo Elemnt Bolt
 
+## File names 
 
-The following is from the file "2020-07-06-152220-ELEMNT BOLT 3A07-1-0.fit". This starts with  "YYYY-MM-DD-HHMMSS", although the time does not always match the start time of the ride. The rest is the same for all files except for the "1" towards the end which is file counter. There are some numbers missing though - could be rides I did not save.
+The raw .fit files have names such as _2020-07-06-152220-ELEMNT BOLT 3A07-1-0.fit_. This starts with  "YYYY-MM-DD-HHMMSS", although the time does not always match the start time of the ride. The rest is the same for all files except for the "1" towards the end which is file counter. There are some numbers missing though - could be rides I did not save.
+
+I thought that the date-time part of the file name would be a unique identifier but this is not always so. There are two pairs of files where there are duplicates, with dates 2022-08-22-082903 and 2022-10-09-082903. These are both rides to Clitheroe where I must have turned off the GPS during a long stop at the cafe. The first file of each pair is the first part of the ride, while the second file contains the full ride. The Wahoo must save a file when I turn it off, then reload the first part and continue when I turn it back on. Therefore the first, smaller file should be redundant. 
+
+The truncated file of each pair does not extract anyway. I can get records but there is error extracting laps, and there is no session or activity data. The main 2022-08-22-082903 file works fine, but the main 2022-10-09-082903 read fit file ( _fit_objs/eb_2022-10-09-082903.RDS_) does not extract (no session data).
+
+I have moved the two redundant files to the `data_redundant` folder.
+
+## Example Fit File Contents
+
+The following is from the file "2020-07-06-152220-ELEMNT BOLT 3A07-1-0.fit"
 
 ```{r, fit}
-fit <- readRDS("../data_processed/eb_2022-06-05-084512.RDS")
-fit2 <- readRDS("../data_processed/eb_2020-08-14-184117.RDS")
+fit <- readRDS("../data_processed/fit_objs/eb_2022-06-05-084512.RDS")
+fit2 <- readRDS("../data_processed/fit_objs/eb_2020-08-14-184117.RDS")
 ```
 
 ```{r, types, echo = TRUE}

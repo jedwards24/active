@@ -22,9 +22,6 @@ ff2 <- ftb %>%
 walk(ff2, process_eb, .progress = TRUE)
 
 # Extract main messages from files saved in previous step
-# File 270 errors when extracting session data. Excluded for now.
-#exclude <- 270
-#ff <- fs::dir_ls("data_processed/fit_objs")[-exclude]
 ff3 <- ftb %>%
   filter(todo) %>%
   pull(proc_name)
