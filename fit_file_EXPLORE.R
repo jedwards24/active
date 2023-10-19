@@ -114,7 +114,7 @@ rec %>%
   addPolylines( )
 
 # record list explore ------
-rec_list <- readRDS("data_processed/records_2023-07-11.RDS")
+rec_list <- readRDS("data_processed/records.RDS")
 rec <- rec_list[[1]]
 count(rec, left_right_balance)
 count(rec, battery_soc)
