@@ -11,6 +11,7 @@ theme_set(theme_minimal())
 rec_list <- readRDS("data_processed/records_2023-07-11.RDS")
 sess <- readRDS("data_processed/sessions_2023-07-11.RDS")
 
+stopifnot(length(rec_list) == nrow(sess))
 # Which records have power --------------
 power_ids <- sess %>%
   mutate(id = row_number()) %>%
@@ -18,8 +19,9 @@ power_ids <- sess %>%
   pull(id)
 names(sess)
 count(sess, is.na(avg_power))
-rec_list <- rec_list[power_ids]
-sess <- sess %>% filter(!is.na(avg_power))
+sess <- sess %>%
+  mutate(id = row_number()) %>%
+  filter(!is.na(avg_power))
 
 # Power summary--------------
 # Helper
@@ -33,7 +35,10 @@ get_power <- function(x) {
 dtp <- enframe(rec_list, value = "data") %>%
   mutate(name = str_remove(name, "data_processed/eb_")) %>%
   mutate(id = row_number()) %>%
+  filter(id %in% power_ids) %>%
   mutate(power = map(data, get_power))
+stopifnot(nrow(dtp) == nrow(sess))
+stopifnot(dtp$id == sess$id)
 
 dt2 <- dtp %>%
   filter(!is.na(power)) %>%

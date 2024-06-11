@@ -69,6 +69,17 @@ fit_extract_save <- function(file, dest = "data_processed/extracts") {
 
 # Power-Duration Curves---------------
 
+# Get `pwr_bests()` for the given record/times and save to `dest` folder.
+# `id` is added to the saved tibble as an "id" attribute.
+pwr_bests_save <- function(record,
+                          id,
+                          times = pwr_time_range(),
+                          dest = "data_processed/power_bests") {
+  df <- pwr_bests(record, times)
+  attr(df, "id") <- id
+  saveRDS(df, fs::path(dest, paste0("pwr_bests_", id, ".RDS")))
+}
+
 # A vector of durations in seconds used for
 # power-duration curves
 pwr_time_range <- function() {
@@ -87,9 +98,9 @@ pwr_peak <- function(record, seconds) {
 }
 
 # Gives peak mean power for a vector of durations for a single activity record.
-# Returns a numeric vector.
+# Returns a tibble with two columns: seconds and watts.
 pwr_bests <- function(record, times = pwr_time_range()) {
-  map_dbl(times, ~pwr_peak(record, .))
+  tibble(seconds = times, watts = map_dbl(times, ~pwr_peak(record, .)))
 }
 
 # Combine a list of power best vectors (peak power for each duration in `times`) into

@@ -34,6 +34,11 @@ Basic shiny doc for interacting with activities (for exploration/debugging).
 2. fit_file objects --> extract. This is a list for each file of five tibbles by message type. Save `data_processed/extracts/`.
 3. Extracts --> one of each of the following: records (list), session (data frame), laps (list), events (list), acts (df). Includes data cleaning and any possible edits.
 
+Additional steps:
+
+* `log_session_PROCESS.R` joins my activ.ty log data and the session data.
+* `power_duration.R` produces power-duration curves for any activities with power data.
+
 ## Misc 
 
 The trackeR package only reads TCX, GCX, DB3 so I've not done anything with it. It have other useful functions which will work on the processed data.

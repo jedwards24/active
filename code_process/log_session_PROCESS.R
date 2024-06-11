@@ -1,7 +1,6 @@
-# Joining log data on to summary data
-# Is tricky in cases where there are multiple rides in same day
-# These do not match due to either combining data into one ride or
-# if a ride was on Coros, not Wahoo
+# Join my activity log data on to summary data.
+# Is tricky in cases where there are multiple rides in same day. These do not
+# match due to either combining data into one ride or if a ride was on Coros, not Wahoo.
 # The below method is ok though.
 library(tidyverse)
 
